@@ -39,7 +39,8 @@ def welcome():
         f"/api/v1.0/precipitation<br/>"
         f"/api/v1.0/stations<br/>"
         f"/api/v1.0/tobs<br/>"
-        f"/api/v1.0/start"
+        f"/api/v1.0/start<br/>"
+        f"/api/v1.0/start-end"
     )
 
 
@@ -114,7 +115,20 @@ def temp():
     tempstart_list=list(temp_start)
     return jsonify(tempstart_list)
 
+@app.route("/api/v1.0/start-end")
+def tempend():
 
+    # Create our session (link) from Python to the DB
+    session = Session(engine)
+
+    last_12months = (dt.date(2017, 8, 23)) - (dt.timedelta(days=365))
+    temp_start_end = session.query(measurement.date, func.min(measurement.tobs), func.avg(measurement.tobs), func.max(measurement.tobs)).\
+    filter(measurement.date >= last_12months, measurement.date <= ('2017-08-23')).\
+    group_by(measurement.date).all()
+
+
+    temp_start_end=list(temp_start_end)
+    return jsonify(temp_start_end)
 
     
     
