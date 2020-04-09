@@ -1,4 +1,5 @@
 import numpy as np
+import pandas as pd
 import datetime as dt
 import sqlalchemy
 from sqlalchemy.ext.automap import automap_base
@@ -10,7 +11,7 @@ from flask import Flask, jsonify
 #################################################
 # Database Setup
 #################################################
-engine = create_engine("sqlite:///hawaii.sqlite")
+engine = create_engine("sqlite:///Hawaii.sqlite")
 
 # reflect an existing database into a new model
 Base = automap_base()
@@ -24,6 +25,7 @@ measurement = Base.classes.measurement
 ##########################################
 # Flask Setup
 ##########################################
+session = Session(engine)
 app = Flask(__name__)
 
 ##########################################
@@ -101,37 +103,34 @@ def tobs():
 
 
 @app.route("/api/v1.0/start")
-def temp():
-    
+def temp (start = "2016-08-23"): 
+
     # Create our session (link) from Python to the DB
     session = Session(engine)
 
-    last_12months = (dt.date(2017, 8, 23)) - (dt.timedelta(days=365))
+    # Given start date, to calculate all dates greater than and equal to the start date.
+    start = "2016-08-23"
     temp_start = session.query(measurement.date, func.min(measurement.tobs), func.avg(measurement.tobs), func.max(measurement.tobs)).\
-    filter(measurement.date >= last_12months).\
-    group_by(measurement.date).all()
-
+    filter(measurement.date >= start).group_by(measurement.date).all()
 
     tempstart_list=list(temp_start)
     return jsonify(tempstart_list)
 
 @app.route("/api/v1.0/start-end")
-def tempend():
+def tempend(start = "2016-08-23", end = "2017-08-23"):
 
     # Create our session (link) from Python to the DB
     session = Session(engine)
 
-    last_12months = (dt.date(2017, 8, 23)) - (dt.timedelta(days=365))
-    temp_start_end = session.query(measurement.date, func.min(measurement.tobs), func.avg(measurement.tobs), func.max(measurement.tobs)).\
-    filter(measurement.date >= last_12months, measurement.date <= ('2017-08-23')).\
-    group_by(measurement.date).all()
+    # Given start date, to calculate for dates between the start and end date inclusive.
+    start = "2016-08-23"
+    end = "2017-08-23"
+    temp_start1 = session.query(measurement.date, func.min(measurement.tobs), func.avg(measurement.tobs), func.max(measurement.tobs)).\
+    filter(measurement.date >= start).filter(measurement.date <= end).group_by(measurement.date).all()
 
+    tempstart_list1=list(temp_start1)
+    return jsonify(tempstart_list1)
 
-    temp_start_end=list(temp_start_end)
-    return jsonify(temp_start_end)
-
-    
     
 if __name__ == '__main__':
     app.run(debug=True)
-
